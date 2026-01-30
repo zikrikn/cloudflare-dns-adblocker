@@ -5,11 +5,8 @@ locals {
   # Iterate through each pihole_domain_list resource and extract its ID
   pihole_domain_lists = [for k, v in cloudflare_teams_list.pihole_domain_lists : v.id]
 
-  # Format the values: remove dashes and prepend $
-  pihole_domain_lists_formatted = [for v in local.pihole_domain_lists : format("$%s", replace(v, "-", ""))]
-
-  # Create filters to use in the policy
-  pihole_ad_filters = formatlist("any(dns.domains[*] in %s)", local.pihole_domain_lists_formatted)
+  # Create filters to use in the policy - format: dns.fqdn in $<list_id>
+  pihole_ad_filters = [for id in local.pihole_domain_lists : format("dns.fqdn in $%s", replace(id, "-", ""))]
   pihole_ad_filter  = join(" or ", local.pihole_ad_filters)
 }
 
