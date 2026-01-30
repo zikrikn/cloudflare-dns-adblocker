@@ -55,13 +55,12 @@ jobs:
           wc -l $LIST_FNAME
 
       #
-      # Commit file
+      # Commit and push directly to main (no PR needed)
       #
-      - name: ↗️ Create Pull Request
-        uses: peter-evans/create-pull-request@v6
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          title: 'Update Domain List'
-          branch-suffix: timestamp
-          commit-message: 'Update Domain List'
-          body: 'Automated update of ad-blocking domain list from adaway.org'
+      - name: 📤 Commit and Push
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add cloudflare/lists/pihole_domain_list.txt
+          git diff --staged --quiet || git commit -m "Update Domain List [skip ci]"
+          git push
