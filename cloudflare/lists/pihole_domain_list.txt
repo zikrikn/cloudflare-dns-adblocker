@@ -1,1 +1,10 @@
-# List of domains
+# Ad-blocking domain list
+# Updated by GitHub Actions from adaway.org
+ad.doubleclick.net
+ads.facebook.com
+ads.google.com
+ads.yahoo.com
+adservice.google.com
+analytics.google.com
+pagead2.googlesyndication.com
+googleadservices.com

@@ -50,8 +50,8 @@ locals {
   # Parse the file and create a list, one item per line
   pihole_domain_list = split("\n", file(local.pihole_domain_list_file))
 
-  # Remove empty lines
-  pihole_domain_list_clean = [for x in local.pihole_domain_list : x if x != ""]
+  # Remove empty lines and comments (lines starting with #)
+  pihole_domain_list_clean = [for x in local.pihole_domain_list : trimspace(x) if trimspace(x) != "" && !startswith(trimspace(x), "#")]
 
   # Use chunklist to split a list into fixed-size chunks
   # It returns a list of lists
