@@ -20,6 +20,7 @@ jobs:
     env:
       TF_VAR_cloudflare_account_id: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
     
     steps:
       - name: 📂 Checkout
@@ -29,6 +30,7 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: "1.5.0"
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
 
       - name: 🔍 Terraform Init
         run: terraform init

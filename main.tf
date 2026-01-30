@@ -1,4 +1,12 @@
 terraform {
+  cloud {
+    organization = "zikri"  # Ganti dengan organization kamu di Terraform Cloud
+
+    workspaces {
+      name = "cloudflare-dns-adblocker"
+    }
+  }
+
   required_providers {
     cloudflare = {
       source  = "cloudflare/cloudflare"
