@@ -22,69 +22,36 @@ jobs:
         uses: actions/checkout@v4
 
       #
-      # Fetch domain lists from multiple sources
+      # Fetch domain list
       #
-      - name: 🔗 Fetch Domain Lists
+      - name: 🔗 Fetch Domain List
         working-directory: ${{ env.FOLDER }}
         run: |
+          LIST_URL="https://adaway.org/hosts.txt"
           LIST_FNAME="pihole_domain_list.txt"
-          TEMP_FILE="temp_combined.txt"
-          
-          # Clear temp file
-          > $TEMP_FILE
-          
-          # Source 1: AdAway
-          echo "[*] Fetching AdAway list..."
-          wget --quiet "https://adaway.org/hosts.txt" -O - >> $TEMP_FILE || true
-          
-          # Source 2: Steven Black's Unified Hosts (ads + malware)
-          echo "[*] Fetching Steven Black list..."
-          wget --quiet "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts" -O - >> $TEMP_FILE || true
-          
-          # Source 3: AdGuard DNS filter
-          echo "[*] Fetching AdGuard DNS list..."
-          wget --quiet "https://v.firebog.net/hosts/AdguardDNS.txt" -O - >> $TEMP_FILE || true
-          
-          # Source 4: Google Ads & Tracking
-          echo "[*] Fetching Google Ads list..."
-          wget --quiet "https://raw.githubusercontent.com/nickspaargaren/no-google/master/pihole-google-adservices.txt" -O - >> $TEMP_FILE || true
-          
-          # Source 5: EasyList (ads)
-          echo "[*] Fetching EasyList..."
-          wget --quiet "https://v.firebog.net/hosts/Easylist.txt" -O - >> $TEMP_FILE || true
-          
-          # Source 6: Prigent Ads
-          echo "[*] Fetching Prigent Ads list..."
-          wget --quiet "https://v.firebog.net/hosts/Prigent-Ads.txt" -O - >> $TEMP_FILE || true
-          
-          echo "[*] Processing combined list..."
-          
-          # Remove comments
-          grep -v '^#' $TEMP_FILE | grep -v '^!' > temp1.txt || true
-          mv temp1.txt $TEMP_FILE
-          
-          # Extract domains (handle both "0.0.0.0 domain" and plain domain formats)
-          cat $TEMP_FILE | sed 's/^0\.0\.0\.0 //' | sed 's/^127\.0\.0\.1 //' | awk '{print $1}' > temp1.txt
-          mv temp1.txt $TEMP_FILE
-          
-          # Remove localhost entries
-          sed -i '/localhost/d' $TEMP_FILE
-          sed -i '/127\.0\.0\.1/d' $TEMP_FILE
-          sed -i '/0\.0\.0\.0/d' $TEMP_FILE
-          sed -i '/broadcasthost/d' $TEMP_FILE
-          sed -i '/local$/d' $TEMP_FILE
-          
-          # Remove empty lines and invalid entries
-          sed -i '/^$/d' $TEMP_FILE
-          sed -i '/^[[:space:]]*$/d' $TEMP_FILE
-          
-          # Sort and remove duplicates
-          sort -u $TEMP_FILE -o $LIST_FNAME
-          
-          # Remove temp file
-          rm -f $TEMP_FILE
-          
-          echo "[*] Done! Total unique domains:"
+
+          echo "[*] Fetching list: ${LIST_URL} -> ${LIST_FNAME}"
+          wget --quiet $LIST_URL -O $LIST_FNAME
+
+          echo "[*] Sorting list..."
+          sort -u -o $LIST_FNAME $LIST_FNAME
+
+          echo "[*] Removing comments..."
+          grep -o '^[^#]*' $LIST_FNAME > temp.txt || true
+          mv temp.txt $LIST_FNAME
+
+          echo "[*] Extracting domains..."
+          cat $LIST_FNAME | awk '{ print $2 }' > temp.txt
+          mv temp.txt $LIST_FNAME
+
+          echo "[*] Removing localhost from list..."
+          sed -i '/localhost/d' $LIST_FNAME
+          sed -i '/127.0.0.1/d' $LIST_FNAME
+
+          echo "[*] Removing empty lines..."
+          sed -i '/^$/d' $LIST_FNAME
+
+          echo "[*] Done! List count:"
           wc -l $LIST_FNAME
 
       #
@@ -96,5 +63,4 @@ jobs:
           git config --local user.name "github-actions[bot]"
           git add cloudflare/lists/pihole_domain_list.txt
           git diff --staged --quiet || git commit -m "Update Domain List"
-          git push
           git push
