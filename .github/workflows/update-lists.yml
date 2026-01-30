@@ -58,9 +58,21 @@ jobs:
       # Commit and push directly to main
       #
       - name: 📤 Commit and Push
+        id: commit
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add cloudflare/lists/pihole_domain_list.txt
-          git diff --staged --quiet || git commit -m "Update Domain List"
-          git push
+          if git diff --staged --quiet; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            git commit -m "Update Domain List"
+            git push
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+
+  # Trigger Terraform Deploy after update
+  deploy:
+    needs: auto-update
+    uses: ./.github/workflows/terraform-deploy.yml
+    secrets: inherit

@@ -11,6 +11,8 @@ on:
     branches:
       - main
   workflow_dispatch:
+  workflow_call:
+    secrets: inherit
 
 jobs:
   terraform:
@@ -25,6 +27,8 @@ jobs:
     steps:
       - name: 📂 Checkout
         uses: actions/checkout@v4
+        with:
+          ref: main
 
       - name: 🔧 Setup Terraform
         uses: hashicorp/setup-terraform@v3
@@ -45,4 +49,3 @@ jobs:
 
       - name: 🚀 Terraform Apply
         run: terraform apply -auto-approve -no-color
-        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
