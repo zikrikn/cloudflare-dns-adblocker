@@ -5,8 +5,8 @@ locals {
   # Iterate through each pihole_domain_list resource and extract its ID
   pihole_domain_lists = [for k, v in cloudflare_teams_list.pihole_domain_lists : v.id]
 
-  # Create filters to use in the policy - format: dns.fqdn in $<list_id>
-  pihole_ad_filters = [for id in local.pihole_domain_lists : format("dns.fqdn in $%s", replace(id, "-", ""))]
+  # Create filters to use in the policy - format: any(dns.domains[*] in $<list_id>)
+  pihole_ad_filters = [for id in local.pihole_domain_lists : format("any(dns.domains[*] in $%s)", id)]
   pihole_ad_filter  = join(" or ", local.pihole_ad_filters)
 }
 
@@ -70,4 +70,14 @@ resource "cloudflare_teams_list" "pihole_domain_lists" {
   name  = "pihole_domain_list_${each.key}"
   type  = "DOMAIN"
   items = each.value
+}
+
+
+# ==============================================================================
+# DNS LOCATION: For logging and tracking DNS queries
+# ==============================================================================
+resource "cloudflare_teams_location" "default" {
+  account_id     = local.cloudflare_account_id
+  name           = "Default Location"
+  client_default = true
 }
