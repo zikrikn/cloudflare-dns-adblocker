@@ -12,16 +12,16 @@ terraform {
 }
 
 # ==============================================================================
-# VARIABLES
+# VARIABLES (set via environment variables: TF_VAR_<name>)
 # ==============================================================================
 variable "cloudflare_api_token" {
-  description = "Cloudflare API Token with Gateway permissions"
+  description = "Cloudflare API Token with Gateway permissions (env: TF_VAR_cloudflare_api_token)"
   type        = string
   sensitive   = true
 }
 
 variable "cloudflare_account_id" {
-  description = "Cloudflare Account ID"
+  description = "Cloudflare Account ID (env: TF_VAR_cloudflare_account_id)"
   type        = string
 }
 

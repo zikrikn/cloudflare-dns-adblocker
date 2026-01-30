@@ -11,23 +11,28 @@ as described in [Serverless Ad Blocking with Cloudflare Gateway](https://blog.ma
 3. Terraform >= 1.1.0
 
 
-## Setup
+## Setup (GitHub Actions - Recommended)
 
-1. Clone this repository
-2. Copy `terraform.tfvars.example` to `terraform.tfvars`:
-   ```bash
-   cp terraform.tfvars.example terraform.tfvars
-   ```
-3. Edit `terraform.tfvars` and fill in your Cloudflare credentials:
-   - `cloudflare_account_id`: Your Cloudflare Account ID (found in the Cloudflare dashboard)
-   - `cloudflare_api_token`: An API token with Gateway Edit permissions
+1. Fork/clone this repository to GitHub
+2. Go to **Settings** → **Secrets and variables** → **Actions**
+3. Add the following repository secrets:
+   - `CLOUDFLARE_ACCOUNT_ID`: Your Cloudflare Account ID
+   - `CLOUDFLARE_API_TOKEN`: Your Cloudflare API Token with Gateway Edit permissions
+4. Push to `main` branch - GitHub Actions will automatically deploy!
 
-4. Initialize and apply Terraform:
-   ```bash
-   terraform init
-   terraform plan
-   terraform apply
-   ```
+
+## Setup (Local Development)
+
+Set environment variables and run Terraform:
+
+```bash
+export TF_VAR_cloudflare_account_id="your-account-id"
+export TF_VAR_cloudflare_api_token="your-api-token"
+
+terraform init
+terraform plan
+terraform apply
+```
 
 
 ## Deploying Resources
