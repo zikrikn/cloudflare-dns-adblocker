@@ -71,13 +71,3 @@ resource "cloudflare_teams_list" "pihole_domain_lists" {
   type  = "DOMAIN"
   items = each.value
 }
-
-
-# ==============================================================================
-# DNS LOCATION: For logging and tracking DNS queries
-# ==============================================================================
-resource "cloudflare_teams_location" "default" {
-  account_id     = local.cloudflare_account_id
-  name           = "Default Location"
-  client_default = true
-}
