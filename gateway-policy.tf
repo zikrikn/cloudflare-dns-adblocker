@@ -5,8 +5,8 @@ locals {
   # Iterate through each pihole_domain_list resource and extract its ID
   # Only include lists that have actual domains (not placeholder)
   pihole_domain_lists = [
-    for k, v in cloudflare_teams_list.pihole_domain_lists : v.id
-    if length(v.items) > 0 && !contains(tolist(v.items), "placeholder.invalid")
+    for k, v in cloudflare_zero_trust_list.pihole_domain_lists : v.id
+    if length(v.items) > 0 && !contains([for item in v.items : item.value], "placeholder.invalid")
   ]
 
   # Create filters to use in the policy - format: any(dns.domains[*] in $<list_id>)
@@ -14,7 +14,7 @@ locals {
   pihole_ad_filter  = length(local.pihole_ad_filters) > 0 ? join(" or ", local.pihole_ad_filters) : "dns.fqdn == \"placeholder.invalid\""
 }
 
-resource "cloudflare_teams_rule" "block_ads" {
+resource "cloudflare_zero_trust_gateway_policy" "block_ads" {
   account_id = local.cloudflare_account_id
 
   name        = "Block Ads"
@@ -28,7 +28,7 @@ resource "cloudflare_teams_rule" "block_ads" {
   action  = "block"
   traffic = local.pihole_ad_filter
 
-  rule_settings {
+  rule_settings = {
     block_page_enabled = false
   }
 }
@@ -66,7 +66,7 @@ locals {
   max_list_slots = 15
 }
 
-resource "cloudflare_teams_list" "pihole_domain_lists" {
+resource "cloudflare_zero_trust_list" "pihole_domain_lists" {
   account_id = local.cloudflare_account_id
 
   for_each = {
@@ -74,7 +74,7 @@ resource "cloudflare_teams_list" "pihole_domain_lists" {
     format("%03d", i) => i < local.pihole_list_count ? element(local.pihole_aggregated_lists, i) : ["placeholder.invalid"]
   }
 
-  name  = "pihole_domain_list_${each.key}"
-  type  = "DOMAIN"
-  items = each.value
+  name = "pihole_domain_list_${each.key}"
+  type = "DOMAIN"
+  items = [for domain in each.value : { value = domain }]
 }
