@@ -47,11 +47,4 @@ provider "cloudflare" {
   api_token = var.cloudflare_api_token
 }
 
-# ==============================================================================
-# DEFAULT LOCATION (preserve existing - do not delete)
-# ==============================================================================
-resource "cloudflare_teams_location" "default" {
-  account_id     = local.cloudflare_account_id
-  name           = "Default Location"
-  client_default = true
-}
+# Note: Default Location already exists in Cloudflare, no need to manage via Terraform
