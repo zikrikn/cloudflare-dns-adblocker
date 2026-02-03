@@ -27,6 +27,10 @@ resource "cloudflare_teams_rule" "block_ads" {
   rule_settings {
     block_page_enabled = false
   }
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 
@@ -64,10 +68,14 @@ resource "cloudflare_teams_list" "pihole_domain_lists" {
 
   for_each = {
     for i in range(0, local.pihole_list_count) :
-    i => element(local.pihole_aggregated_lists, i)
+    format("list_%03d", i) => element(local.pihole_aggregated_lists, i)
   }
 
   name  = "pihole_domain_list_${each.key}"
   type  = "DOMAIN"
   items = each.value
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
