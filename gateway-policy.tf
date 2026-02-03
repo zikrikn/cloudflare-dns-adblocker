@@ -3,11 +3,15 @@
 # ==============================================================================
 locals {
   # Iterate through each pihole_domain_list resource and extract its ID
-  pihole_domain_lists = [for k, v in cloudflare_teams_list.pihole_domain_lists : v.id]
+  # Only include lists that have actual domains (not placeholder)
+  pihole_domain_lists = [
+    for k, v in cloudflare_teams_list.pihole_domain_lists : v.id
+    if length(v.items) > 0 && v.items[0] != "placeholder.invalid"
+  ]
 
   # Create filters to use in the policy - format: any(dns.domains[*] in $<list_id>)
   pihole_ad_filters = [for id in local.pihole_domain_lists : format("any(dns.domains[*] in $%s)", id)]
-  pihole_ad_filter  = join(" or ", local.pihole_ad_filters)
+  pihole_ad_filter  = length(local.pihole_ad_filters) > 0 ? join(" or ", local.pihole_ad_filters) : "dns.fqdn == \"placeholder.invalid\""
 }
 
 resource "cloudflare_teams_rule" "block_ads" {
@@ -26,10 +30,6 @@ resource "cloudflare_teams_rule" "block_ads" {
 
   rule_settings {
     block_page_enabled = false
-  }
-
-  lifecycle {
-    create_before_destroy = true
   }
 }
 
@@ -60,22 +60,21 @@ locals {
 
   # Get the number of lists (chunks) created
   pihole_list_count = length(local.pihole_aggregated_lists)
-}
 
+  # Fixed number of list slots - adjust this if you need more
+  # This prevents Terraform from ever deleting lists
+  max_list_slots = 15
+}
 
 resource "cloudflare_teams_list" "pihole_domain_lists" {
   account_id = local.cloudflare_account_id
 
   for_each = {
-    for i in range(0, local.pihole_list_count) :
-    format("list_%03d", i) => element(local.pihole_aggregated_lists, i)
+    for i in range(0, local.max_list_slots) :
+    format("%03d", i) => i < local.pihole_list_count ? element(local.pihole_aggregated_lists, i) : ["placeholder.invalid"]
   }
 
   name  = "pihole_domain_list_${each.key}"
   type  = "DOMAIN"
   items = each.value
-
-  lifecycle {
-    create_before_destroy = true
-  }
 }
