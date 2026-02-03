@@ -6,7 +6,7 @@ locals {
   # Only include lists that have actual domains (not placeholder)
   pihole_domain_lists = [
     for k, v in cloudflare_teams_list.pihole_domain_lists : v.id
-    if length(v.items) > 0 && v.items[0] != "placeholder.invalid"
+    if length(v.items) > 0 && !contains(tolist(v.items), "placeholder.invalid")
   ]
 
   # Create filters to use in the policy - format: any(dns.domains[*] in $<list_id>)
