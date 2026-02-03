@@ -37,9 +37,8 @@ jobs:
       - name: 🔍 Terraform Init
         run: terraform init
 
-      - name: 📋 Terraform Format Check
-        run: terraform fmt -check
-        continue-on-error: true
+      - name: 📋 Terraform Format
+        run: terraform fmt -recursive
 
       - name: 📝 Terraform Plan
         run: terraform plan -no-color
