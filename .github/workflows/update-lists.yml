@@ -28,7 +28,8 @@ jobs:
       - name: 🔗 Fetch Domain List
         working-directory: ${{ env.FOLDER }}
         run: |
-          LIST_URL="https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/hosts/pro.txt"
+          # Number of entries: ~290,311 (fits within 300 lists limit)
+          LIST_URL="https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/hosts/multi.txt"
           LIST_FNAME="pihole_domain_list.txt"
 
           echo "[*] Fetching list: ${LIST_URL} -> ${LIST_FNAME}"

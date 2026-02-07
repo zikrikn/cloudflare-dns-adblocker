@@ -1,26 +1,16 @@
-name: 'Terraform Deploy'
+name: 'Deploy Gateway Rules'
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - '*.tf'
-      - 'cloudflare/lists/**'
-  pull_request:
-    branches:
-      - main
   workflow_dispatch:
 
 jobs:
-  terraform:
+  deploy:
     runs-on: ubuntu-latest
     environment: tf-env
     
     env:
-      TF_VAR_cloudflare_account_id: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-      TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
     
     steps:
       - name: 📂 Checkout
@@ -28,21 +18,12 @@ jobs:
         with:
           ref: main
 
-      - name: 🔧 Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: "1.5.0"
-          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+      - name: 🔧 Install jq
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq
 
-      - name: 🔍 Terraform Init
-        run: terraform init
-
-      - name: 📋 Terraform Format
-        run: terraform fmt -recursive
-
-      - name: 📝 Terraform Plan
-        run: terraform plan -no-color
-        if: github.event_name == 'pull_request'
-
-      - name: 🚀 Terraform Apply
-        run: terraform apply -auto-approve -no-color
+      - name: 🚀 Deploy Gateway Rules
+        run: |
+          chmod +x ./manage-gateway.sh
+          ./manage-gateway.sh reset
