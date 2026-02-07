@@ -38,8 +38,7 @@ resource "cloudflare_zero_trust_gateway_policy" "block_ads" {
 # LISTS: AD Blocking domain list
 #
 # Remote source:
-#   - https://firebog.net/
-#   - https://adaway.org/hosts.txt
+#   - https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/hosts/light.txt
 # Local file:
 #   - ./cloudflare/lists/pihole_domain_list.txt
 #   - the file can be updated periodically via Github Actions (see README)
@@ -63,7 +62,8 @@ locals {
 
   # Fixed number of list slots - adjust this if you need more
   # This prevents Terraform from ever deleting lists
-  max_list_slots = 15
+  # Hagezi light list has ~113k entries, need 115 slots (1000 per list)
+  max_list_slots = 115
 }
 
 resource "cloudflare_zero_trust_list" "pihole_domain_lists" {
