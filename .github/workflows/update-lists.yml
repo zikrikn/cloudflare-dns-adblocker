@@ -2,11 +2,12 @@ name: 'Update Domain List'
 
 on:
   workflow_dispatch:
-  # schedule:
-  #   - cron: '0 10 15 * *' # At 10:00 on day-of-month 15
+  schedule:
+    - cron: '0 10 15 * *' # At 10:00 on day-of-month 15
 
 env:
   FOLDER: 'cloudflare/lists'
+  MAX_DOMAINS: 300000  # Max 300 lists x 1000 domains per list
 
 jobs:
   auto-update:
@@ -55,6 +56,22 @@ jobs:
 
           echo "[*] Done! List count:"
           wc -l $LIST_FNAME
+
+      - name: 🚨 Check Domain Count Limit
+        working-directory: ${{ env.FOLDER }}
+        run: |
+          DOMAIN_COUNT=$(wc -l < pihole_domain_list.txt)
+          echo "Domain count: $DOMAIN_COUNT"
+          echo "Max allowed: $MAX_DOMAINS"
+          
+          if [ "$DOMAIN_COUNT" -gt "$MAX_DOMAINS" ]; then
+            echo "::error::Domain list exceeded limit! Count: $DOMAIN_COUNT, Max: $MAX_DOMAINS"
+            echo "::error::Cloudflare Gateway only supports max 300 lists (300,000 domains at 1000/list)"
+            echo "::error::Consider using a smaller blocklist or contact Cloudflare for higher limits."
+            exit 1
+          fi
+          
+          echo "✅ Domain count is within limit."
 
       #
       # Commit and push directly to main
