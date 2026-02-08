@@ -2,8 +2,8 @@ name: 'Update Domain List'
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '0 10 15 * *' # At 10:00 on day-of-month 15
+  # schedule:
+  #   - cron: '0 10 15 * *' # At 10:00 on day-of-month 15
 
 env:
   FOLDER: 'cloudflare/lists'
